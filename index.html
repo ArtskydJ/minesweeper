@@ -27,6 +27,10 @@
 		var MINES = 40
 
 		function generateField() {
+			function arr(length, fn) {
+				return Array.from({ length }, fn)
+			}
+
 			function hasMine(fieldX, fieldY) {
 				if (!(fieldX >= 0 && fieldY >= 0 && fieldX < FIELD_LENGTH && fieldY < FIELD_LENGTH)) {
 					return false
@@ -35,25 +39,25 @@
 			}
 
 			function touching(fieldX, fieldY) {
-				var result = 0
-				result += hasMine(fieldX - 1, fieldY)
-				result += hasMine(fieldX, fieldY - 1)
-				result += hasMine(fieldX + 1, fieldY)
-				result += hasMine(fieldX, fieldY + 1)
-				result += hasMine(fieldX - 1, fieldY - 1)
-				result += hasMine(fieldX - 1, fieldY + 1)
-				result += hasMine(fieldX + 1, fieldY - 1)
-				result += hasMine(fieldX + 1, fieldY + 1)
-				return result
+				return 0
+					+ hasMine(fieldX - 1, fieldY)
+					+ hasMine(fieldX, fieldY - 1)
+					+ hasMine(fieldX + 1, fieldY)
+					+ hasMine(fieldX, fieldY + 1)
+					+ hasMine(fieldX - 1, fieldY - 1)
+					+ hasMine(fieldX - 1, fieldY + 1)
+					+ hasMine(fieldX + 1, fieldY - 1)
+					+ hasMine(fieldX + 1, fieldY + 1)
 			}
-			var field = []
 
-			for (var i = 0; i < FIELD_LENGTH; i++) {
-				field.push([])
-				for (var j = 0; j < FIELD_LENGTH; j++) {
-					field[i].push({ mine: false, state: 'covered' })
-				}
-			}
+			var field = arr(FIELD_LENGTH, () =>
+				arr(FIELD_LENGTH, () => ({
+					mine: false,
+					covered: true,
+					mark: 'none', // Marks: 'none', 'flagged', 'question'
+					touching: 0,
+				}))
+			)
 			for (var minesLaid = 0; minesLaid < MINES;) {
 				var x = Math.floor(Math.random() * FIELD_LENGTH)
 				var y = Math.floor(Math.random() * FIELD_LENGTH)
@@ -64,16 +68,10 @@
 			}
 
 			for (var i = 0; i < FIELD_LENGTH; i++) {
-				field.push([])
 				for (var j = 0; j < FIELD_LENGTH; j++) {
 					field[i][j].touching = touching(i, j)
 				}
 			}
-			// States:
-			// 'covered'
-			// 'uncovered' (mine=false)
-			// 'flagged'
-			// 'question'
 
 			return field
 		}
@@ -138,16 +136,16 @@
 			for (var i = 0; i < FIELD_LENGTH; i++) {
 				for (var j = 0; j < FIELD_LENGTH; j++) {
 					var cell = field[i][j]
-					if (cell.state === 'uncovered') {
+					if (!cell.covered) {
 						drawDarkBox(i, j)
 						if (cell.mine) {
 							drawMine(i, j)
 						} else if (cell.touching) {
 							drawTouching(i, j, cell.touching)
 						}
-					} else if (cell.state === 'flagged') {
+					} else if (cell.mark === 'flagged') {
 						drawText(i, j, '!!', 'red')
-					} else if (cell.state === 'question') {
+					} else if (cell.mark === 'question') {
 						drawText(i, j, '?', 'black')
 					}
 				}
@@ -159,7 +157,7 @@
 			for (var i = 0; i < FIELD_LENGTH; i++) {
 				for (var j = 0; j < FIELD_LENGTH; j++) {
 					var cell = field[i][j]
-					if (!cell.mine && cell.state !== 'uncovered') {
+					if (!cell.mine && cell.covered) {
 						win = false
 					}
 				}
@@ -170,9 +168,9 @@
 		function uncover(field, fieldX, fieldY) {
 			if (fieldX >= 0 && fieldY >= 0 && fieldX < FIELD_LENGTH && fieldY < FIELD_LENGTH) {
 				var cell = field[fieldX][fieldY]
-				var prevState = cell.state
-				cell.state = 'uncovered'
-				if (!cell.mine && !cell.touching && prevState !== 'uncovered') {
+				var prevCovered = cell.covered
+				cell.covered = false
+				if (!cell.mine && !cell.touching && prevCovered) {
 					uncover(field, fieldX - 1, fieldY)
 					uncover(field, fieldX, fieldY - 1)
 					uncover(field, fieldX + 1, fieldY)
@@ -226,18 +224,13 @@
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
 			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
 			var cell = field[x][y]
-			cell.state = {
-				uncovered: 'uncovered',
-				covered: 'flagged',
-				flagged: 'question',
-				question: 'covered'
-			}[cell.state]
-			drawField(field, canvas, context)
-			if (calculateWin(field)) {
-				setTimeout(function() {
-					alert('You win!')
-					window.location.reload()
-				}, 1)
+			if (cell.covered) {
+				cell.mark = {
+					none: 'flagged',
+					flagged: 'question',
+					question: 'none'
+				}[cell.mark]
+				drawField(field, canvas, context)
 			}
 			return false
 		}
