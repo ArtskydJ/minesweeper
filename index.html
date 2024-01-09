@@ -26,92 +26,110 @@
 		var FIELD_LENGTH = 16
 		var MINES = 40
 
-		var field = []
-
-		for (var i = 0; i < FIELD_LENGTH; i++) {
-			field.push([])
-			for (var j = 0; j < FIELD_LENGTH; j++) {
-				field[i].push({ mine: false, state: 'covered' })
+		function generateField() {
+			function hasMine(fieldX, fieldY) {
+				if (!(fieldX >= 0 && fieldY >= 0 && fieldX < FIELD_LENGTH && fieldY < FIELD_LENGTH)) {
+					return false
+				}
+				return field[fieldX][fieldY].mine
 			}
-		}
-		for (var minesLaid = 0; minesLaid < MINES;) {
-			var x = Math.floor(Math.random() * FIELD_LENGTH)
-			var y = Math.floor(Math.random() * FIELD_LENGTH)
-			if (!field[x][y].mine) {
-				field[x][y].mine = true
-				minesLaid++
+
+			function touching(fieldX, fieldY) {
+				var result = 0
+				result += hasMine(fieldX - 1, fieldY)
+				result += hasMine(fieldX, fieldY - 1)
+				result += hasMine(fieldX + 1, fieldY)
+				result += hasMine(fieldX, fieldY + 1)
+				result += hasMine(fieldX - 1, fieldY - 1)
+				result += hasMine(fieldX - 1, fieldY + 1)
+				result += hasMine(fieldX + 1, fieldY - 1)
+				result += hasMine(fieldX + 1, fieldY + 1)
+				return result
 			}
-		}
+			var field = []
 
-		for (var i = 0; i < FIELD_LENGTH; i++) {
-			field.push([])
-			for (var j = 0; j < FIELD_LENGTH; j++) {
-				field[i][j].touching = touching(i, j)
+			for (var i = 0; i < FIELD_LENGTH; i++) {
+				field.push([])
+				for (var j = 0; j < FIELD_LENGTH; j++) {
+					field[i].push({ mine: false, state: 'covered' })
+				}
 			}
-		}
-		// States:
-		// 'covered'
-		// 'uncovered' (mine=false)
-		// 'flagged'
-		// 'question'
+			for (var minesLaid = 0; minesLaid < MINES;) {
+				var x = Math.floor(Math.random() * FIELD_LENGTH)
+				var y = Math.floor(Math.random() * FIELD_LENGTH)
+				if (!field[x][y].mine) {
+					field[x][y].mine = true
+					minesLaid++
+				}
+			}
 
-		var canvas = document.querySelector('canvas')
-		canvas.width = canvas.clientWidth
-		canvas.height = canvas.clientHeight
-		var context = canvas.getContext('2d')
+			for (var i = 0; i < FIELD_LENGTH; i++) {
+				field.push([])
+				for (var j = 0; j < FIELD_LENGTH; j++) {
+					field[i][j].touching = touching(i, j)
+				}
+			}
+			// States:
+			// 'covered'
+			// 'uncovered' (mine=false)
+			// 'flagged'
+			// 'question'
 
-		function drawHorizontalLine(y) {
-			drawLine(0, y, canvas.width, y)
-		}
-
-		function drawVerticalLine(x) {
-			drawLine(x, 0, x, canvas.height)
-		}
-
-		function drawLine(x1, y1, x2, y2) {
-			context.beginPath()
-			context.moveTo(x1, y1)
-			context.lineTo(x2, y2)
-			context.stroke()
+			return field
 		}
 
-		function drawMine(fieldX, fieldY) {
-			var width = canvas.width / FIELD_LENGTH
-			var height = canvas.height / FIELD_LENGTH
-			var x = width * (fieldX + 0.5)
-			var y = height * (fieldY + 0.5)
-			context.beginPath()
-			context.fillStyle = 'red'
-			context.arc(x, y, height * 0.4, 0, 2 * Math.PI)
-			context.fill()
-			context.stroke()
-		}
+		function drawField(field, canvas, context) {
+			function drawLine(x1, y1, x2, y2) {
+				context.beginPath()
+				context.moveTo(x1, y1)
+				context.lineTo(x2, y2)
+				context.stroke()
+			}
 
-		function drawTouching(fieldX, fieldY, touching) {
-			var color = [ null, 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkred', 'darkred', 'darkred' ][touching]
-			var text = touching.toString()
-			drawText(fieldX, fieldY, text, color)
-		}
+			function drawHorizontalLine(y) {
+				drawLine(0, y, canvas.width, y)
+			}
 
-		function drawText(fieldX, fieldY, text, color) {
-			var x = canvas.width / FIELD_LENGTH * (fieldX + 0.2)
-			var y = canvas.height / FIELD_LENGTH * (fieldY + 0.85)
-			context.font = (canvas.width / FIELD_LENGTH) + 'px Arial'
-			context.fillStyle = color
-			context.fillText(text, x, y)
-		}
+			function drawVerticalLine(x) {
+				drawLine(x, 0, x, canvas.height)
+			}
 
-		function drawDarkBox(fieldX, fieldY) {
-			var width = canvas.width / FIELD_LENGTH
-			var height = canvas.height / FIELD_LENGTH
-			var x1 = width * fieldX
-			var y1 = height * fieldY
-			context.fillStyle = 'darkgray'
-			context.fillRect(x1 + 1, y1 + 1, width - 2, height - 2)
-			context.fillStyle = 'black'
-		}
+			function drawMine(fieldX, fieldY) {
+				var width = canvas.width / FIELD_LENGTH
+				var height = canvas.height / FIELD_LENGTH
+				var x = width * (fieldX + 0.5)
+				var y = height * (fieldY + 0.5)
+				context.beginPath()
+				context.fillStyle = 'red'
+				context.arc(x, y, height * 0.4, 0, 2 * Math.PI)
+				context.fill()
+				context.stroke()
+			}
 
-		function drawField() {
+			function drawTouching(fieldX, fieldY, touching) {
+				var color = [ null, 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkred', 'darkred', 'darkred' ][touching]
+				var text = touching.toString()
+				drawText(fieldX, fieldY, text, color)
+			}
+
+			function drawText(fieldX, fieldY, text, color) {
+				var x = canvas.width / FIELD_LENGTH * (fieldX + 0.2)
+				var y = canvas.height / FIELD_LENGTH * (fieldY + 0.85)
+				context.font = (canvas.width / FIELD_LENGTH) + 'px Arial'
+				context.fillStyle = color
+				context.fillText(text, x, y)
+			}
+
+			function drawDarkBox(fieldX, fieldY) {
+				var width = canvas.width / FIELD_LENGTH
+				var height = canvas.height / FIELD_LENGTH
+				var x1 = width * fieldX
+				var y1 = height * fieldY
+				context.fillStyle = 'darkgray'
+				context.fillRect(x1 + 1, y1 + 1, width - 2, height - 2)
+				context.fillStyle = 'black'
+			}
+
 			context.clearRect(0, 0, canvas.width, canvas.height)
 			for (var i = 1; i < FIELD_LENGTH; i++) {
 				drawHorizontalLine(canvas.height / FIELD_LENGTH * i)
@@ -136,46 +154,59 @@
 			}
 		}
 
-		function touching(fieldX, fieldY) {
-			var result = 0
-			if (fieldX > 0) result += field[fieldX - 1][fieldY].mine
-			if (fieldY > 0) result += field[fieldX][fieldY - 1].mine
-			if (fieldX < FIELD_LENGTH - 1) result += field[fieldX + 1][fieldY].mine
-			if (fieldY < FIELD_LENGTH - 1) result += field[fieldX][fieldY + 1].mine
-			if (fieldX > 0 && fieldY > 0) result += field[fieldX - 1][fieldY - 1].mine
-			if (fieldX > 0 && fieldY < FIELD_LENGTH - 1) result += field[fieldX - 1][fieldY + 1].mine
-			if (fieldX < FIELD_LENGTH - 1 && fieldY > 0) result += field[fieldX + 1][fieldY - 1].mine
-			if (fieldX < FIELD_LENGTH - 1 && fieldY < FIELD_LENGTH - 1) result += field[fieldX + 1][fieldY + 1].mine
-			return result
+		function calculateWin(field) {
+			var win = true
+			for (var i = 0; i < FIELD_LENGTH; i++) {
+				for (var j = 0; j < FIELD_LENGTH; j++) {
+					var cell = field[i][j]
+					if (!cell.mine && cell.state !== 'uncovered') {
+						win = false
+					}
+				}
+			}
+			return win
 		}
 
-		function uncover(fieldX, fieldY) {
-			var cell = field[fieldX][fieldY]
-			var prevState = cell.state
-			cell.state = 'uncovered'
-			if (!cell.mine && !cell.touching && prevState !== 'uncovered') {
-				if (fieldX > 0) uncover(fieldX - 1, fieldY)
-				if (fieldY > 0) uncover(fieldX, fieldY - 1)
-				if (fieldX < FIELD_LENGTH - 1) uncover(fieldX + 1, fieldY)
-				if (fieldY < FIELD_LENGTH - 1) uncover(fieldX, fieldY + 1)
-				if (fieldX > 0 && fieldY > 0) uncover(fieldX - 1, fieldY - 1)
-				if (fieldX > 0 && fieldY < FIELD_LENGTH - 1) uncover(fieldX - 1, fieldY + 1)
-				if (fieldX < FIELD_LENGTH - 1 && fieldY > 0) uncover(fieldX + 1, fieldY - 1)
-				if (fieldX < FIELD_LENGTH - 1 && fieldY < FIELD_LENGTH - 1) uncover(fieldX + 1, fieldY + 1)
+		function uncover(field, fieldX, fieldY) {
+			if (fieldX >= 0 && fieldY >= 0 && fieldX < FIELD_LENGTH && fieldY < FIELD_LENGTH) {
+				var cell = field[fieldX][fieldY]
+				var prevState = cell.state
+				cell.state = 'uncovered'
+				if (!cell.mine && !cell.touching && prevState !== 'uncovered') {
+					uncover(field, fieldX - 1, fieldY)
+					uncover(field, fieldX, fieldY - 1)
+					uncover(field, fieldX + 1, fieldY)
+					uncover(field, fieldX, fieldY + 1)
+					uncover(field, fieldX - 1, fieldY - 1)
+					uncover(field, fieldX - 1, fieldY + 1)
+					uncover(field, fieldX + 1, fieldY - 1)
+					uncover(field, fieldX + 1, fieldY + 1)
+				}
 			}
 		}
+
+		var canvas = document.querySelector('canvas')
+		canvas.width = canvas.clientWidth
+		canvas.height = canvas.clientHeight
+		var context = canvas.getContext('2d')
 
 		canvas.onclick = function (e) {
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
 			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
 			var cell = field[x][y]
-			uncover(x, y)
-			drawField()
+			uncover(field, x, y)
+			drawField(field, canvas, context)
 			if (cell.mine) {
 				setTimeout(function() {
 					alert('You lose!')
 					window.location.reload()
 				}, 1)
+			}
+			if (calculateWin(field)) {
+				setTimeout(function() {
+					alert('You win!')
+					window.location.reload()
+				})
 			}
 		}
 
@@ -189,11 +220,18 @@
 				flagged: 'question',
 				question: 'covered'
 			}[cell.state]
-			drawField()
+			drawField(field, canvas, context)
+			if (calculateWin(field)) {
+				setTimeout(function() {
+					alert('You win!')
+					window.location.reload()
+				}, 1)
+			}
 			return false
 		}
 
-		drawField()
+		var field = generateField()
+		drawField(field, canvas, context)
 	</script>
 </body>
 </html>
