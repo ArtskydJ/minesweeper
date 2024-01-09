@@ -4,9 +4,10 @@
 	<meta charset="utf-8">
 	<title>Minesweeper</title>
 	<style type="text/css">
-		html, body, canvas {
+		html,
+		body {
 			margin: 0;
-			padding: 0;
+			font-size: 0;
 		}
 		canvas {
 			width: 100vw;
@@ -15,12 +16,19 @@
 			max-height: 100vw;
 			background-color: #ccc;
 			cursor: pointer;
-			margin-bottom: -4px; /* makes it work in chrome */
+		}
+		span {
+			color: black;
+			font-size: 5vh;
+			font-family: helvetica;
+			vertical-align: bottom;
+			text-wrap: nowrap;
 		}
 	</style>
 </head>
 <body>
 	<canvas></canvas>
+	<span></span>
 
 	<script type="text/javascript">
 		var FIELD_LENGTH = 16
@@ -113,7 +121,7 @@
 			function drawText(fieldX, fieldY, text, color) {
 				var x = canvas.width / FIELD_LENGTH * (fieldX + 0.2)
 				var y = canvas.height / FIELD_LENGTH * (fieldY + 0.85)
-				context.font = (canvas.width / FIELD_LENGTH) + 'px Arial'
+				context.font = (canvas.width / FIELD_LENGTH) + 'px helvetica'
 				context.fillStyle = color
 				context.fillText(text, x, y)
 			}
@@ -133,36 +141,33 @@
 				drawHorizontalLine(canvas.height / FIELD_LENGTH * i)
 				drawVerticalLine(canvas.width / FIELD_LENGTH * i)
 			}
+
+			var win = true
+			var lose = false
 			for (var i = 0; i < FIELD_LENGTH; i++) {
 				for (var j = 0; j < FIELD_LENGTH; j++) {
 					var cell = field[i][j]
+
+					if (!cell.mine && cell.covered) {
+						win = false
+					}
 					if (!cell.covered) {
 						drawDarkBox(i, j)
 						if (cell.mine) {
 							drawMine(i, j)
+							lose = true
 						} else if (cell.touching) {
 							drawTouching(i, j, cell.touching)
 						}
 					} else if (cell.mark === 'flagged') {
 						drawText(i, j, '!!', 'red')
 					} else if (cell.mark === 'question') {
-						drawText(i, j, '?', 'black')
+						drawText(i, j, '?', 'darkgray')
 					}
 				}
 			}
-		}
 
-		function calculateWin(field) {
-			var win = true
-			for (var i = 0; i < FIELD_LENGTH; i++) {
-				for (var j = 0; j < FIELD_LENGTH; j++) {
-					var cell = field[i][j]
-					if (!cell.mine && cell.covered) {
-						win = false
-					}
-				}
-			}
-			return win
+			return win ? 'win' : (lose ? 'lose' : '')
 		}
 
 		function uncover(field, fieldX, fieldY) {
@@ -188,9 +193,16 @@
 		canvas.height = canvas.clientHeight
 		var context = canvas.getContext('2d')
 
+		var span = document.querySelector('span')
+
 		var firstUncover = true
+		var winOrLose = false
 
 		canvas.onclick = function (e) {
+			if (winOrLose) {
+				window.location.reload()
+				return
+			}
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
 			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
 
@@ -205,18 +217,9 @@
 			firstUncover = false
 
 			uncover(field, x, y)
-			drawField(field, canvas, context)
-			if (cell.mine) {
-				setTimeout(function() {
-					alert('You lose!')
-					window.location.reload()
-				}, 1)
-			}
-			if (calculateWin(field)) {
-				setTimeout(function() {
-					alert('You win!')
-					window.location.reload()
-				})
+			winOrLose = drawField(field, canvas, context)
+			if (winOrLose) {
+				span.innerHTML = 'You ' + winOrLose + '!'
 			}
 		}
 
