@@ -190,10 +190,22 @@
 		canvas.height = canvas.clientHeight
 		var context = canvas.getContext('2d')
 
+		var firstUncover = true
+
 		canvas.onclick = function (e) {
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
 			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
+
 			var cell = field[x][y]
+
+			// Make it so your first click can't be on a mine
+			// It might be cleaner to generate the mines after the first click
+			while (firstUncover && cell.mine) {
+				field = generateField()
+				cell = field[x][y]
+			}
+			firstUncover = false
+
 			uncover(field, x, y)
 			drawField(field, canvas, context)
 			if (cell.mine) {
