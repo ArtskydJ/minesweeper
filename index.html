@@ -214,7 +214,13 @@
 			}
 		}
 
-		var canvas = document.querySelector('canvas')
+		function getClickedCoords(canvas, clickEvent) {
+			const x = Math.floor(clickEvent.clientX / canvas.width * FIELD_LENGTH)
+			const y = Math.floor(clickEvent.clientY / canvas.height * FIELD_LENGTH)
+			return { x, y }
+		}
+
+		const canvas = document.querySelector('canvas')
 		canvas.width = canvas.clientWidth
 		canvas.height = canvas.clientHeight
 		const context = canvas.getContext('2d')
@@ -228,10 +234,8 @@
 			if (gameOver) {
 				return
 			}
-			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
-			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
-
-			var cell = field[x][y]
+			const { x, y } = getClickedCoords(canvas, e)
+			let cell = field[x][y]
 
 			// Make it so your first click can't be on a mine
 			// It might be cleaner to generate the mines after the first click
@@ -251,9 +255,9 @@
 		}
 
 		canvas.oncontextmenu = function (e) {
-			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
-			var y = Math.floor(e.clientY / canvas.height * FIELD_LENGTH)
-			var cell = field[x][y]
+			const { x, y } = getClickedCoords(canvas, e)
+			const cell = field[x][y]
+
 			if (cell.covered) {
 				cell.mark = {
 					none: 'flagged',
