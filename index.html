@@ -24,6 +24,9 @@
 			vertical-align: bottom;
 			text-wrap: nowrap;
 		}
+		span button {
+			font-size: 5vh;
+		}
 	</style>
 </head>
 <body>
@@ -200,7 +203,6 @@
 
 		canvas.onclick = function (e) {
 			if (winOrLose) {
-				window.location.reload()
 				return
 			}
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
@@ -219,7 +221,7 @@
 			uncover(field, x, y)
 			winOrLose = drawField(field, canvas, context)
 			if (winOrLose) {
-				span.innerHTML = 'You ' + winOrLose + '!'
+				span.innerHTML = 'You ' + winOrLose + '!  <button onclick="window.location.reload()">Play Again</button>'
 			}
 		}
 
