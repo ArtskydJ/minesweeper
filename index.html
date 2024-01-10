@@ -129,6 +129,13 @@
 				context.fillText(text, x, y)
 			}
 
+			function drawFlag(fieldX, fieldY, text) {
+				var x = canvas.width / FIELD_LENGTH * (fieldX + 0.05)
+				var y = canvas.height / FIELD_LENGTH * (fieldY + 0.75)
+				context.font = (0.75 * canvas.width / FIELD_LENGTH) + 'px helvetica'
+				context.fillText('🚩', x, y)
+			}
+
 			function drawDarkBox(fieldX, fieldY) {
 				var width = canvas.width / FIELD_LENGTH
 				var height = canvas.height / FIELD_LENGTH
@@ -163,9 +170,9 @@
 							drawTouching(i, j, cell.touching)
 						}
 					} else if (cell.mark === 'flagged') {
-						drawText(i, j, '!!', 'red')
+						drawFlag(i, j)
 					} else if (cell.mark === 'question') {
-						drawText(i, j, '?', 'darkgray')
+						drawText(i, j, '?', 'gray')
 					}
 				}
 			}
