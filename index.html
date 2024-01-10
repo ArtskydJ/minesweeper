@@ -34,8 +34,8 @@
 	<span></span>
 
 	<script type="text/javascript">
-		var FIELD_LENGTH = 16
-		var MINES = 40
+		const FIELD_LENGTH = 16
+		const MINES = 40
 
 		function generateField() {
 			function arr(length, fn) {
@@ -61,7 +61,7 @@
 					+ hasMine(fieldX + 1, fieldY + 1)
 			}
 
-			var field = arr(FIELD_LENGTH, () =>
+			const field = arr(FIELD_LENGTH, () =>
 				arr(FIELD_LENGTH, () => ({
 					mine: false,
 					covered: true,
@@ -69,17 +69,17 @@
 					touching: 0,
 				}))
 			)
-			for (var minesLaid = 0; minesLaid < MINES;) {
-				var x = Math.floor(Math.random() * FIELD_LENGTH)
-				var y = Math.floor(Math.random() * FIELD_LENGTH)
+			for (let minesLaid = 0; minesLaid < MINES;) {
+				const x = Math.floor(Math.random() * FIELD_LENGTH)
+				const y = Math.floor(Math.random() * FIELD_LENGTH)
 				if (!field[x][y].mine) {
 					field[x][y].mine = true
 					minesLaid++
 				}
 			}
 
-			for (var i = 0; i < FIELD_LENGTH; i++) {
-				for (var j = 0; j < FIELD_LENGTH; j++) {
+			for (let i = 0; i < FIELD_LENGTH; i++) {
+				for (let j = 0; j < FIELD_LENGTH; j++) {
 					field[i][j].touching = touching(i, j)
 				}
 			}
@@ -88,11 +88,11 @@
 		}
 
 		function calculateGameState(field) {
-			var won = true
-			var lost = false
-			for (var i = 0; i < FIELD_LENGTH; i++) {
-				for (var j = 0; j < FIELD_LENGTH; j++) {
-					var cell = field[i][j]
+			let won = true
+			let lost = false
+			for (let i = 0; i < FIELD_LENGTH; i++) {
+				for (let j = 0; j < FIELD_LENGTH; j++) {
+					let cell = field[i][j]
 
 					if (!cell.mine && cell.covered) {
 						won = false
@@ -122,10 +122,10 @@
 			}
 
 			function drawMine(fieldX, fieldY) {
-				var width = canvas.width / FIELD_LENGTH
-				var height = canvas.height / FIELD_LENGTH
-				var x = width * (fieldX + 0.5)
-				var y = height * (fieldY + 0.5)
+				let width = canvas.width / FIELD_LENGTH
+				let height = canvas.height / FIELD_LENGTH
+				let x = width * (fieldX + 0.5)
+				let y = height * (fieldY + 0.5)
 				context.beginPath()
 				context.fillStyle = 'red'
 				context.arc(x, y, height * 0.4, 0, 2 * Math.PI)
@@ -134,45 +134,45 @@
 			}
 
 			function drawTouching(fieldX, fieldY, touching) {
-				var color = [ null, 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkred', 'darkred', 'darkred' ][touching]
-				var text = touching.toString()
+				let color = [ null, 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkred', 'darkred', 'darkred' ][touching]
+				let text = touching.toString()
 				drawText(fieldX, fieldY, text, color)
 			}
 
 			function drawText(fieldX, fieldY, text, color) {
-				var x = canvas.width / FIELD_LENGTH * (fieldX + 0.2)
-				var y = canvas.height / FIELD_LENGTH * (fieldY + 0.85)
+				let x = canvas.width / FIELD_LENGTH * (fieldX + 0.2)
+				let y = canvas.height / FIELD_LENGTH * (fieldY + 0.85)
 				context.font = (canvas.width / FIELD_LENGTH) + 'px helvetica'
 				context.fillStyle = color
 				context.fillText(text, x, y)
 			}
 
 			function drawFlag(fieldX, fieldY, text) {
-				var x = canvas.width / FIELD_LENGTH * (fieldX + 0.05)
-				var y = canvas.height / FIELD_LENGTH * (fieldY + 0.75)
+				let x = canvas.width / FIELD_LENGTH * (fieldX + 0.05)
+				let y = canvas.height / FIELD_LENGTH * (fieldY + 0.75)
 				context.font = (0.75 * canvas.width / FIELD_LENGTH) + 'px helvetica'
 				context.fillText('🚩', x, y)
 			}
 
 			function drawDarkBox(fieldX, fieldY) {
-				var width = canvas.width / FIELD_LENGTH
-				var height = canvas.height / FIELD_LENGTH
-				var x1 = width * fieldX
-				var y1 = height * fieldY
+				let width = canvas.width / FIELD_LENGTH
+				let height = canvas.height / FIELD_LENGTH
+				let x1 = width * fieldX
+				let y1 = height * fieldY
 				context.fillStyle = 'darkgray'
 				context.fillRect(x1 + 1, y1 + 1, width - 2, height - 2)
 				context.fillStyle = 'black'
 			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height)
-			for (var i = 1; i < FIELD_LENGTH; i++) {
+			for (let i = 1; i < FIELD_LENGTH; i++) {
 				drawHorizontalLine(canvas.height / FIELD_LENGTH * i)
 				drawVerticalLine(canvas.width / FIELD_LENGTH * i)
 			}
 
-			for (var i = 0; i < FIELD_LENGTH; i++) {
-				for (var j = 0; j < FIELD_LENGTH; j++) {
-					var cell = field[i][j]
+			for (let i = 0; i < FIELD_LENGTH; i++) {
+				for (let j = 0; j < FIELD_LENGTH; j++) {
+					let cell = field[i][j]
 
 					if ((won || lost) && cell.mine) {
 						drawMine(i, j)
@@ -198,8 +198,8 @@
 
 		function uncover(field, fieldX, fieldY) {
 			if (fieldX >= 0 && fieldY >= 0 && fieldX < FIELD_LENGTH && fieldY < FIELD_LENGTH) {
-				var cell = field[fieldX][fieldY]
-				var prevCovered = cell.covered
+				const cell = field[fieldX][fieldY]
+				const prevCovered = cell.covered
 				cell.covered = false
 				if (!cell.mine && !cell.touching && prevCovered) {
 					uncover(field, fieldX - 1, fieldY)
@@ -217,15 +217,15 @@
 		var canvas = document.querySelector('canvas')
 		canvas.width = canvas.clientWidth
 		canvas.height = canvas.clientHeight
-		var context = canvas.getContext('2d')
+		const context = canvas.getContext('2d')
 
-		var span = document.querySelector('span')
+		const span = document.querySelector('span')
 
-		var firstUncover = true
-		var winOrLose = false
+		let firstUncover = true
+		let gameOver = false
 
 		canvas.onclick = function (e) {
-			if (winOrLose) {
+			if (gameOver) {
 				return
 			}
 			var x = Math.floor(e.clientX / canvas.width * FIELD_LENGTH)
@@ -243,8 +243,9 @@
 
 			uncover(field, x, y)
 			const { won, lost } = calculateGameState(field)
+			gameOver = won || lost
 			drawField(field, canvas, context, won, lost)
-			if (won || lost) {
+			if (gameOver) {
 				span.innerHTML = `You ${ won ? 'won' : 'lost'}!  <button onclick="window.location.reload()">Play Again</button>`
 			}
 		}
@@ -264,7 +265,7 @@
 			return false
 		}
 
-		var field = generateField()
+		let field = generateField()
 		drawField(field, canvas, context, false, false)
 	</script>
 </body>
