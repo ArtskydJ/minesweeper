@@ -249,12 +249,14 @@
 			}
 			firstUncover = false
 
-			uncover(field, x, y)
-			const { won, lost } = calculateGameState(field)
-			gameOver = won || lost
-			drawField(field, canvas, context, won, lost)
-			if (gameOver) {
-				span.innerHTML = `You ${ won ? 'won' : 'lost'}!<br/><button onclick="window.location.reload()">Play Again</button>`
+			if (cell.mark === 'none') {
+				uncover(field, x, y)
+				const { won, lost } = calculateGameState(field)
+				gameOver = won || lost
+				drawField(field, canvas, context, won, lost)
+				if (gameOver) {
+					span.innerHTML = `You ${ won ? 'won' : 'lost'}!<br/><button onclick="window.location.reload()">Play Again</button>`
+				}
 			}
 		}
 
