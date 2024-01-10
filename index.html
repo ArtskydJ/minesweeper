@@ -87,7 +87,25 @@
 			return field
 		}
 
-		function drawField(field, canvas, context) {
+		function calculateGameState(field) {
+			var won = true
+			var lost = false
+			for (var i = 0; i < FIELD_LENGTH; i++) {
+				for (var j = 0; j < FIELD_LENGTH; j++) {
+					var cell = field[i][j]
+
+					if (!cell.mine && cell.covered) {
+						won = false
+					}
+					if (cell.mine && !cell.covered) {
+						lost = true
+					}
+				}
+			}
+			return { won: won, lost: lost }
+		}
+
+		function drawField(field, canvas, context, won, lost) {
 			function drawLine(x1, y1, x2, y2) {
 				context.beginPath()
 				context.moveTo(x1, y1)
@@ -152,20 +170,18 @@
 				drawVerticalLine(canvas.width / FIELD_LENGTH * i)
 			}
 
-			var win = true
-			var lose = false
 			for (var i = 0; i < FIELD_LENGTH; i++) {
 				for (var j = 0; j < FIELD_LENGTH; j++) {
 					var cell = field[i][j]
 
-					if (!cell.mine && cell.covered) {
-						win = false
+					if ((won || lost) && cell.mine) {
+						drawMine(i, j)
 					}
+
 					if (!cell.covered) {
 						drawDarkBox(i, j)
 						if (cell.mine) {
 							drawMine(i, j)
-							lose = true
 						} else if (cell.touching) {
 							drawTouching(i, j, cell.touching)
 						}
@@ -177,7 +193,7 @@
 				}
 			}
 
-			return win ? 'win' : (lose ? 'lose' : '')
+			return won ? 'win' : (lost ? 'lose' : '')
 		}
 
 		function uncover(field, fieldX, fieldY) {
@@ -226,9 +242,10 @@
 			firstUncover = false
 
 			uncover(field, x, y)
-			winOrLose = drawField(field, canvas, context)
-			if (winOrLose) {
-				span.innerHTML = 'You ' + winOrLose + '!  <button onclick="window.location.reload()">Play Again</button>'
+			const { won, lost } = calculateGameState(field)
+			drawField(field, canvas, context, won, lost)
+			if (won || lost) {
+				span.innerHTML = `You ${ won ? 'won' : 'lost'}!  <button onclick="window.location.reload()">Play Again</button>`
 			}
 		}
 
@@ -242,13 +259,13 @@
 					flagged: 'question',
 					question: 'none'
 				}[cell.mark]
-				drawField(field, canvas, context)
+				drawField(field, canvas, context, false, false)
 			}
 			return false
 		}
 
 		var field = generateField()
-		drawField(field, canvas, context)
+		drawField(field, canvas, context, false, false)
 	</script>
 </body>
 </html>
