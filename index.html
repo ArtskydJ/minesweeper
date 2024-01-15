@@ -224,6 +224,25 @@
 			return { x, y }
 		}
 
+		function formatTime(seconds) {
+			if (Number.isNaN(seconds)) {
+				return 'N/A'
+			}
+			return `${ Math.floor(seconds / 60) }:${ ('0' + (seconds % 60)).slice(-2) }`
+		}
+
+		function statsHtml(wins, losses, bestTime) {
+			return [
+				`Wins: ${ wins }`,
+				`Losses: ${ losses }`,
+				`Best Time: ${ formatTime(bestTime) }`,
+				``,
+				`Time: ${ formatTime(secondsElapsed) }`,
+				``,
+				``,
+			].join(`<br>`)
+		}
+
 		const canvas = document.querySelector('canvas')
 		canvas.width = canvas.clientWidth
 		canvas.height = canvas.clientHeight
@@ -231,8 +250,20 @@
 
 		const span = document.querySelector('span')
 
+		let wins = localStorage.getItem('wins') || 0
+		let losses = localStorage.getItem('losses') || 0
+		let bestTime = parseInt(localStorage.getItem('bestTime'), 10)
+
 		let firstUncover = true
 		let gameOver = false
+		let secondsElapsed = 0 // This should probably be a timestamp, and I should update the UI periodically, but I'm doing it a dumb way for now
+
+		let interval = setInterval(function () {
+			if (!firstUncover && !gameOver) {
+				secondsElapsed++
+			}
+			span.innerHTML = statsHtml(wins, losses, bestTime)
+		}, 1000)
 
 		canvas.onclick = function (e) {
 			if (gameOver) {
@@ -255,7 +286,16 @@
 				gameOver = won || lost
 				drawField(field, canvas, context, won, lost)
 				if (gameOver) {
-					span.innerHTML = `You ${ won ? 'won' : 'lost'}!<br/><button onclick="window.location.reload()">Play Again</button>`
+					clearInterval(interval)
+					if (won) {
+						if (secondsElapsed < bestTime || Number.isNaN(bestTime)) {
+							localStorage.setItem('bestTime', bestTime = secondsElapsed)
+						}
+						localStorage.setItem('wins', ++wins)
+					} else {
+						localStorage.setItem('losses', ++losses)
+					}
+					span.innerHTML = `${ statsHtml(wins, losses, bestTime) }You ${ won ? 'won' : 'lost'}!<br/><button onclick="window.location.reload()">Play Again</button>`
 				}
 			}
 		}
@@ -274,6 +314,8 @@
 			}
 			return false
 		}
+
+		span.innerHTML = statsHtml(wins, losses, bestTime)
 
 		let field = generateField()
 		drawField(field, canvas, context, false, false)
