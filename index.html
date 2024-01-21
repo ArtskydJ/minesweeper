@@ -287,6 +287,7 @@
 				drawField(field, canvas, context, won, lost)
 				if (gameOver) {
 					clearInterval(interval)
+					const prevBest = bestTime
 					if (won) {
 						if (secondsElapsed < bestTime || Number.isNaN(bestTime)) {
 							localStorage.setItem('bestTime', bestTime = secondsElapsed)
@@ -295,7 +296,12 @@
 					} else {
 						localStorage.setItem('losses', ++losses)
 					}
-					span.innerHTML = `${ statsHtml(wins, losses, bestTime) }You ${ won ? 'won' : 'lost'}!<br/><button onclick="window.location.reload()">Play Again</button>`
+					span.innerHTML = `
+						${ statsHtml(wins, losses, bestTime) }
+						${ won && secondsElapsed < prevBest ? `New Best Time!<br>Previous: ${ formatTime(prevBest) }<br>` : '' }
+						You ${ won ? 'won' : 'lost'}!<br/>
+						<button onclick="window.location.reload()">Play Again</button>
+					`
 				}
 			}
 		}
