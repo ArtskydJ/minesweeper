@@ -112,8 +112,8 @@
 		function drawField(field, canvas, context, won, lost) {
 			function drawLine(x1, y1, x2, y2) {
 				context.beginPath()
-				context.moveTo(x1, y1)
-				context.lineTo(x2, y2)
+				context.moveTo(Math.floor(x1) + 0.5, Math.floor(y1) + 0.5)
+				context.lineTo(Math.floor(x2) + 0.5, Math.floor(y2) + 0.5)
 				context.stroke()
 			}
 
@@ -168,6 +168,9 @@
 				context.fillStyle = 'black'
 			}
 
+			canvas.width = canvas.clientWidth
+			canvas.height = canvas.clientHeight
+
 			context.clearRect(0, 0, canvas.width, canvas.height)
 			for (let i = 1; i < FIELD_LENGTH; i++) {
 				drawHorizontalLine(canvas.height / FIELD_LENGTH * i)
@@ -219,8 +222,8 @@
 		}
 
 		function getClickedCoords(canvas, clickEvent) {
-			const x = Math.floor(clickEvent.clientX / canvas.width * FIELD_LENGTH)
-			const y = Math.floor(clickEvent.clientY / canvas.height * FIELD_LENGTH)
+			const x = Math.floor(clickEvent.clientX / canvas.clientWidth * FIELD_LENGTH)
+			const y = Math.floor(clickEvent.clientY / canvas.clientHeight * FIELD_LENGTH)
 			return { x, y }
 		}
 
@@ -244,8 +247,6 @@
 		}
 
 		const canvas = document.querySelector('canvas')
-		canvas.width = canvas.clientWidth
-		canvas.height = canvas.clientHeight
 		const context = canvas.getContext('2d')
 
 		const span = document.querySelector('span')
