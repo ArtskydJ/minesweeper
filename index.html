@@ -54,15 +54,7 @@
 			}
 
 			function touching(fieldX, fieldY) {
-				return 0
-					+ hasMine(fieldX - 1, fieldY)
-					+ hasMine(fieldX, fieldY - 1)
-					+ hasMine(fieldX + 1, fieldY)
-					+ hasMine(fieldX, fieldY + 1)
-					+ hasMine(fieldX - 1, fieldY - 1)
-					+ hasMine(fieldX - 1, fieldY + 1)
-					+ hasMine(fieldX + 1, fieldY - 1)
-					+ hasMine(fieldX + 1, fieldY + 1)
+				return getNeighbors(fieldX, fieldY).filter(([x, y]) => hasMine(x, y)).length
 			}
 
 			const field = arr(FIELD_LENGTH, () =>
@@ -209,16 +201,22 @@
 				const prevCovered = cell.covered
 				cell.covered = false
 				if (!cell.mine && !cell.touching && prevCovered) {
-					uncover(field, fieldX - 1, fieldY)
-					uncover(field, fieldX, fieldY - 1)
-					uncover(field, fieldX + 1, fieldY)
-					uncover(field, fieldX, fieldY + 1)
-					uncover(field, fieldX - 1, fieldY - 1)
-					uncover(field, fieldX - 1, fieldY + 1)
-					uncover(field, fieldX + 1, fieldY - 1)
-					uncover(field, fieldX + 1, fieldY + 1)
+					getNeighbors(fieldX, fieldY).forEach(([x, y]) => uncover(field, x, y))
 				}
 			}
+		}
+
+		function getNeighbors(fieldX, fieldY) {
+			return [
+				[fieldX - 1, fieldY],
+				[fieldX, fieldY - 1],
+				[fieldX + 1, fieldY],
+				[fieldX, fieldY + 1],
+				[fieldX - 1, fieldY - 1],
+				[fieldX - 1, fieldY + 1],
+				[fieldX + 1, fieldY - 1],
+				[fieldX + 1, fieldY + 1],
+			].filter(([x, y]) => x >= 0 && y >= 0 && x < FIELD_LENGTH && y < FIELD_LENGTH)
 		}
 
 		function getClickedCoords(canvas, clickEvent) {
@@ -281,8 +279,26 @@
 			}
 			firstUncover = false
 
-			if (cell.mark === 'none') {
+			let didUncover = false
+
+			if (!cell.covered && cell.touching) {
+				// Chord click: reveal non-flagged neighbors if flagged count matches the number
+				const neighbors = getNeighbors(x, y)
+				const flaggedCount = neighbors.filter(([nx, ny]) => field[nx][ny].mark === 'flagged').length
+				if (flaggedCount === cell.touching) {
+					neighbors.forEach(([nx, ny]) => {
+						if (field[nx][ny].covered && field[nx][ny].mark !== 'flagged') {
+							uncover(field, nx, ny)
+							didUncover = true
+						}
+					})
+				}
+			} else if (cell.mark === 'none') {
 				uncover(field, x, y)
+				didUncover = true
+			}
+
+			if (didUncover) {
 				const { won, lost } = calculateGameState(field)
 				gameOver = won || lost
 				drawField(field, canvas, context, won, lost)
